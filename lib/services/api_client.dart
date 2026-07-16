@@ -143,4 +143,81 @@ class ApiClient {
       throw Exception('Create routine failed (${response.statusCode}): ${response.body}');
     }
   }
+
+  // Workout API
+
+  static Future<List<dynamic>> getWorkouts() async {
+    final response = await authorizedRequest(() => http.get(
+      Uri.parse('$baseUrl/workout'),
+      headers: {'Authorization': 'Bearer $accessToken'},
+    ));
+
+    if (response.statusCode != 200) {
+      throw Exception('Failed to load workouts (${response.statusCode}): ${response.body}');
+    }
+
+    return jsonDecode(response.body);
+  }
+
+  static Future<Map<String, dynamic>> startWorkout(String? routineId) async {
+    final response = await authorizedRequest(() => http.post(
+      Uri.parse('$baseUrl/workout'),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $accessToken',
+      },
+      body: jsonEncode({'name': null, 'routineId': routineId}),
+    ));
+
+    if (response.statusCode != 200) {
+      throw Exception('Failed to start workout (${response.statusCode}): ${response.body}');
+    }
+
+    return jsonDecode(response.body);
+  }
+
+  static Future<Map<String, dynamic>> updateSet(String workoutId, String setId, Map<String, dynamic> changes) async {
+    final response = await authorizedRequest(() => http.patch(
+      Uri.parse('$baseUrl/workout/$workoutId/sets/$setId'),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $accessToken',
+      },
+      body: jsonEncode(changes),
+    ));
+
+    if (response.statusCode != 200) {
+      throw Exception('Failed to update set (${response.statusCode}): ${response.body}');
+    }
+
+    return jsonDecode(response.body);
+  }
+
+  static Future<Map<String, dynamic>> addSet(String workoutId, String exerciseId) async {
+    final response = await authorizedRequest(() => http.post(
+      Uri.parse('$baseUrl/workout/$workoutId/sets'),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $accessToken',
+      },
+      body: jsonEncode({'exerciseId': exerciseId, 'setType': 'WORKING'}),
+    ));
+
+    if (response.statusCode != 200) {
+      throw Exception('Failed to add set (${response.statusCode}): ${response.body}');
+    }
+
+    return jsonDecode(response.body);
+  }
+
+  static Future<void> finishWorkout(String workoutId) async {
+    final response = await authorizedRequest(() => http.patch(
+      Uri.parse('$baseUrl/workout/$workoutId/finish'),
+      headers: {'Authorization': 'Bearer $accessToken'},
+    ));
+
+    if (response.statusCode != 200) {
+      throw Exception('Failed to finish workout (${response.statusCode}): ${response.body}');
+    }
+  }
 }

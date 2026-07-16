@@ -1,5 +1,6 @@
 import 'package:fitness_app_mobile/screens/profile_tab.dart';
 import 'package:fitness_app_mobile/screens/routines_tab.dart';
+import 'package:fitness_app_mobile/screens/workouts_tab.dart';
 import 'package:flutter/material.dart';
 
 import 'exercises_tab.dart';
@@ -15,7 +16,7 @@ class _HomeScreenState extends State<HomeScreen> {
   int selectedIndex = 0;
 
   static const List<Widget> tabs = [
-    Center(child: Text('Workouts — coming soon')),
+    WorkoutsTab(),
     RoutinesTab(),
     ExercisesTab(),
     ProfileTab(),
