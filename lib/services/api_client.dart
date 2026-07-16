@@ -220,4 +220,57 @@ class ApiClient {
       throw Exception('Failed to finish workout (${response.statusCode}): ${response.body}');
     }
   }
+
+  static Future<Map<String, dynamic>> getMe() async {
+    final response = await authorizedRequest(() => http.get(
+      Uri.parse('$baseUrl/user/me'),
+      headers: {'Authorization': 'Bearer $accessToken'},
+    ));
+
+    if (response.statusCode != 200) {
+      throw Exception('Failed to load profile (${response.statusCode}): ${response.body}');
+    }
+
+    return jsonDecode(response.body);
+  }
+
+  static Future<void> logout() async {
+    if (refreshToken != null) {
+      await http.post(
+        Uri.parse('$baseUrl/auth/logout'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'refreshToken': refreshToken}),
+      );
+    }
+    accessToken = null;
+    refreshToken = null;
+  }
+
+  static Future<List<dynamic>> getMeasurements() async {
+    final response = await authorizedRequest(() => http.get(
+      Uri.parse('$baseUrl/measurements'),
+      headers: {'Authorization': 'Bearer $accessToken'},
+    ));
+
+    if (response.statusCode != 200) {
+      throw Exception('Failed to load measurements (${response.statusCode}): ${response.body}');
+    }
+
+    return jsonDecode(response.body);
+  }
+
+  static Future<void> createMeasurement(Map<String, dynamic> measurement) async {
+    final response = await authorizedRequest(() => http.post(
+      Uri.parse('$baseUrl/measurements'),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $accessToken',
+      },
+      body: jsonEncode(measurement),
+    ));
+
+    if (response.statusCode != 201) {
+      throw Exception('Failed to save measurement (${response.statusCode}): ${response.body}');
+    }
+  }
 }
