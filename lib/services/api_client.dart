@@ -53,4 +53,24 @@ class ApiClient {
 
     return jsonDecode(response.body);
   }
+
+  static Future<void> createExercise(String name, String exerciseType, String equipment, String primaryMuscleGroup) async {
+    final response = await http.post(
+      Uri.parse('$baseUrl/exercises'),
+      headers: {'Authorization': 'Bearer $accessToken',
+                'Content-Type': 'application/json'},
+      body: jsonEncode({
+        'name': name,
+        'exerciseType': exerciseType,
+        'equipment': equipment,
+        'primaryMuscleGroup': primaryMuscleGroup,
+        'otherMuscles': [],
+        'imageUrl': '',
+      }),
+    );
+
+    if (response.statusCode != 201) {
+      throw Exception(response.body);
+    }
+  }
 }

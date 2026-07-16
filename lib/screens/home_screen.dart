@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../services/api_client.dart';
+import 'create_exercise_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -55,6 +56,19 @@ class _HomeScreenState extends State<HomeScreen> {
             subtitle: Text('${exercise['primaryMuscleGroup']} • ${exercise['equipment']}'),
           );
         },
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () async {
+          final created = await Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const CreateExerciseScreen()),
+          );
+          if (created == true) {
+            setState(() => loading = true);
+            loadExercises();
+          }
+        },
+        child: const Icon(Icons.add),
       ),
     );
   }
