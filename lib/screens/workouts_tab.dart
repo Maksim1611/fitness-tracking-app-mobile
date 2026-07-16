@@ -118,11 +118,11 @@ class _WorkoutsTabState extends State<WorkoutsTab> {
                     MaterialPageRoute(builder: (context) => WorkoutDetailScreen(workout: workout)),
                   );
                 } else {
-                  final done = await Navigator.push(
+                  await Navigator.push(
                     context,
                     MaterialPageRoute(builder: (context) => ActiveWorkoutScreen(workout: workout)),
                   );
-                  if (done == true) {
+                  if (mounted) {
                     setState(() => loading = true);
                     loadWorkouts();
                   }

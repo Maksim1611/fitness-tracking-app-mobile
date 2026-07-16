@@ -2,16 +2,42 @@ import 'package:flutter/material.dart';
 
 import '../services/api_client.dart';
 
+// Which input boxes each exercise type needs.
+// If type is unknown (null), fall back to weight + reps.
+bool typeHasWeight(String? t) {
+  final type = t ?? 'WEIGHT_REPS';
+  return type == 'WEIGHT_REPS' ||
+      type == 'WEIGHTED_BODYWEIGHT' ||
+      type == 'ASSISTED_BODYWEIGHT' ||
+      type == 'WEIGHT_DURATION';
+}
+
+bool typeHasReps(String? t) {
+  final type = t ?? 'WEIGHT_REPS';
+  return type == 'WEIGHT_REPS' ||
+      type == 'REPS_ONLY' ||
+      type == 'BODYWEIGHT' ||
+      type == 'WEIGHTED_BODYWEIGHT' ||
+      type == 'ASSISTED_BODYWEIGHT';
+}
+
+bool typeHasDuration(String? t) {
+  final type = t ?? 'WEIGHT_REPS';
+  return type == 'DURATION' || type == 'WEIGHT_DURATION' || type == 'DISTANCE';
+}
+
 class SetRow {
   final Map<String, dynamic> set;
   final TextEditingController weightController;
   final TextEditingController repsController;
+  final TextEditingController durationController;
   final TextEditingController rpeController;
   bool completed;
 
   SetRow(this.set)
       : weightController = TextEditingController(text: set['weight']?.toString() ?? ''),
         repsController = TextEditingController(text: set['reps']?.toString() ?? ''),
+        durationController = TextEditingController(text: set['durationSeconds']?.toString() ?? ''),
         rpeController = TextEditingController(text: set['rpe']?.toString() ?? ''),
         completed = set['completed'] == true;
 }
@@ -19,9 +45,10 @@ class SetRow {
 class ExerciseGroup {
   final String exerciseId;
   final String exerciseName;
+  final String? exerciseType;
   final List<SetRow> sets = [];
 
-  ExerciseGroup(this.exerciseId, this.exerciseName);
+  ExerciseGroup(this.exerciseId, this.exerciseName, this.exerciseType);
 }
 
 class ActiveWorkoutScreen extends StatefulWidget {
@@ -45,7 +72,7 @@ class _ActiveWorkoutScreenState extends State<ActiveWorkoutScreen> {
     for (final set in widget.workout['sets']) {
       final group = byExercise.putIfAbsent(
         set['exerciseId'],
-            () => ExerciseGroup(set['exerciseId'], set['exerciseName']),
+            () => ExerciseGroup(set['exerciseId'], set['exerciseName'], set['exerciseType']),
       );
       group.sets.add(SetRow(set));
     }
@@ -101,7 +128,11 @@ class _ActiveWorkoutScreenState extends State<ActiveWorkoutScreen> {
                     if (existing != null) {
                       existing.sets.add(SetRow(newSet));
                     } else {
-                      final group = ExerciseGroup(exercise['id'], exercise['name']);
+                      final group = ExerciseGroup(
+                        exercise['id'],
+                        exercise['name'],
+                        exercise['exerciseType'],
+                      );
                       group.sets.add(SetRow(newSet));
                       groups.add(group);
                     }
@@ -127,6 +158,9 @@ class _ActiveWorkoutScreenState extends State<ActiveWorkoutScreen> {
       }
       if (row.repsController.text.isNotEmpty) {
         changes['reps'] = int.parse(row.repsController.text);
+      }
+      if (row.durationController.text.isNotEmpty) {
+        changes['durationSeconds'] = int.parse(row.durationController.text);
       }
       if (row.rpeController.text.isNotEmpty) {
         changes['rpe'] = double.parse(row.rpeController.text);
@@ -185,22 +219,36 @@ class _ActiveWorkoutScreenState extends State<ActiveWorkoutScreen> {
                       Row(
                         children: [
                           SizedBox(width: 44, child: Text('Set ${i + 1}')),
-                          Expanded(
-                            child: TextField(
-                              controller: group.sets[i].weightController,
-                              keyboardType: TextInputType.number,
-                              decoration: const InputDecoration(labelText: 'kg'),
+                          if (typeHasWeight(group.exerciseType)) ...[
+                            Expanded(
+                              child: TextField(
+                                controller: group.sets[i].weightController,
+                                keyboardType: TextInputType.number,
+                                decoration: const InputDecoration(labelText: 'kg'),
+                              ),
                             ),
-                          ),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: TextField(
-                              controller: group.sets[i].repsController,
-                              keyboardType: TextInputType.number,
-                              decoration: const InputDecoration(labelText: 'reps'),
+                            const SizedBox(width: 8),
+                          ],
+                          if (typeHasReps(group.exerciseType)) ...[
+                            Expanded(
+                              child: TextField(
+                                controller: group.sets[i].repsController,
+                                keyboardType: TextInputType.number,
+                                decoration: const InputDecoration(labelText: 'reps'),
+                              ),
                             ),
-                          ),
-                          const SizedBox(width: 8),
+                            const SizedBox(width: 8),
+                          ],
+                          if (typeHasDuration(group.exerciseType)) ...[
+                            Expanded(
+                              child: TextField(
+                                controller: group.sets[i].durationController,
+                                keyboardType: TextInputType.number,
+                                decoration: const InputDecoration(labelText: 'sec'),
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                          ],
                           Expanded(
                             child: TextField(
                               controller: group.sets[i].rpeController,
