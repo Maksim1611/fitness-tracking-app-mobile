@@ -114,5 +114,33 @@ class ApiClient {
     }
   }
 
+  // Routines Api
 
+  static Future<List<dynamic>> getRoutines() async {
+    final response = await authorizedRequest(() => http.get(
+      Uri.parse('$baseUrl/routine'),
+      headers: {'Authorization': 'Bearer $accessToken'},
+    ));
+
+    if (response.statusCode != 200) {
+      throw Exception('Failed to load routines (${response.statusCode}): ${response.body}');
+    }
+
+    return jsonDecode(response.body);
+  }
+
+  static Future<void> createRoutine(Map<String, dynamic> routine) async {
+    final response = await authorizedRequest(() => http.post(
+      Uri.parse('$baseUrl/routine'),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $accessToken',
+      },
+      body: jsonEncode(routine),
+    ));
+
+    if (response.statusCode != 200) {
+      throw Exception('Create routine failed (${response.statusCode}): ${response.body}');
+    }
+  }
 }

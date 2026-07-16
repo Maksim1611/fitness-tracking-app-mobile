@@ -16,6 +16,24 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final TextEditingController passwordController = TextEditingController();
   String message = '';
 
+  Future<void> submit() async {
+    try {
+      await ApiClient.register(
+        nameController.text,
+        usernameController.text,
+        emailController.text,
+        passwordController.text,
+      );
+      if (context.mounted) {
+        Navigator.pop(context);
+      }
+    } catch (e) {
+      setState(() {
+        message = e.toString();
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -64,27 +82,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     prefixIcon: Icon(Icons.lock_outline),
                     border: OutlineInputBorder(),
                   ),
+                  onSubmitted: (_) => submit(),
                 ),
                 const SizedBox(height: 24),
                 FilledButton(
                   style: FilledButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 16)),
-                  onPressed: () async {
-                    try {
-                      await ApiClient.register(
-                        nameController.text,
-                        usernameController.text,
-                        emailController.text,
-                        passwordController.text,
-                      );
-                      if (context.mounted) {
-                        Navigator.pop(context);
-                      }
-                    } catch (e) {
-                      setState(() {
-                        message = e.toString();
-                      });
-                    }
-                  },
+                  onPressed: submit,
                   child: const Text('Register'),
                 ),
                 const SizedBox(height: 12),

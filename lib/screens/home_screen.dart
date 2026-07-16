@@ -1,7 +1,8 @@
+import 'package:fitness_app_mobile/screens/profile_tab.dart';
+import 'package:fitness_app_mobile/screens/routines_tab.dart';
 import 'package:flutter/material.dart';
 
-import '../services/api_client.dart';
-import 'create_exercise_screen.dart';
+import 'exercises_tab.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -11,64 +12,28 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  List<dynamic> exercises = [];
-  bool loading = true;
-  String error = '';
+  int selectedIndex = 0;
 
-  @override
-  void initState() {
-    super.initState();
-    loadExercises();
-  }
-
-  Future<void> loadExercises() async {
-    try {
-      final result = await ApiClient.getExercises();
-      setState(() {
-        exercises = result;
-        loading = false;
-      });
-    } catch (e) {
-      setState(() {
-        error = e.toString();
-        loading = false;
-      });
-    }
-  }
+  static const List<Widget> tabs = [
+    Center(child: Text('Workouts — coming soon')),
+    RoutinesTab(),
+    ExercisesTab(),
+    ProfileTab(),
+  ];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('My exercises')),
-      body: loading
-          ? const Center(child: CircularProgressIndicator())
-          : error.isNotEmpty
-          ? Center(child: Text(error))
-          : exercises.isEmpty
-          ? const Center(child: Text('No exercises yet — create your first one!'))
-          : ListView.builder(
-        itemCount: exercises.length,
-        itemBuilder: (context, index) {
-          final exercise = exercises[index];
-          return ListTile(
-            leading: const Icon(Icons.fitness_center),
-            title: Text(exercise['name']),
-            subtitle: Text('${exercise['primaryMuscleGroup']} • ${exercise['equipment']}'),
-          );
-        },
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () async {
-          final created = await Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => const CreateExerciseScreen()),
-          );
-          if (created == true) {
-            setState(() => loading = true);
-            loadExercises();
-          }
-        },
-        child: const Icon(Icons.add),
+      body: tabs[selectedIndex],
+      bottomNavigationBar: NavigationBar(
+        selectedIndex: selectedIndex,
+        onDestinationSelected: (index) => setState(() => selectedIndex = index),
+        destinations: const [
+          NavigationDestination(icon: Icon(Icons.play_circle_outline), label: 'Workouts'),
+          NavigationDestination(icon: Icon(Icons.list_alt), label: 'Routines'),
+          NavigationDestination(icon: Icon(Icons.fitness_center), label: 'Exercises'),
+          NavigationDestination(icon: Icon(Icons.person_outline), label: 'Profile'),
+        ],
       ),
     );
   }
