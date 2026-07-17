@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 
 import '../services/api_client.dart';
 import 'create_measurement_screen.dart';
-import 'create_measurement_screen.dart';
 
 class MeasurementsScreen extends StatefulWidget {
   const MeasurementsScreen({super.key});

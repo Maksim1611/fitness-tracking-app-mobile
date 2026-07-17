@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../services/api_client.dart';
+import '../theme/app_theme.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -42,7 +43,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 400),
           child: Padding(
-            padding: const EdgeInsets.all(24),
+            padding: const EdgeInsets.all(AppSpacing.lg),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -52,46 +53,47 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   decoration: const InputDecoration(
                     labelText: 'Name',
                     prefixIcon: Icon(Icons.person_outline),
-                    border: OutlineInputBorder(),
                   ),
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: AppSpacing.md),
                 TextField(
                   controller: usernameController,
                   decoration: const InputDecoration(
                     labelText: 'Username',
                     prefixIcon: Icon(Icons.alternate_email),
-                    border: OutlineInputBorder(),
                   ),
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: AppSpacing.md),
                 TextField(
                   controller: emailController,
                   decoration: const InputDecoration(
                     labelText: 'Email',
                     prefixIcon: Icon(Icons.email_outlined),
-                    border: OutlineInputBorder(),
                   ),
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: AppSpacing.md),
                 TextField(
                   controller: passwordController,
                   obscureText: true,
                   decoration: const InputDecoration(
                     labelText: 'Password',
                     prefixIcon: Icon(Icons.lock_outline),
-                    border: OutlineInputBorder(),
                   ),
                   onSubmitted: (_) => submit(),
                 ),
-                const SizedBox(height: 24),
+                const SizedBox(height: AppSpacing.lg),
                 FilledButton(
-                  style: FilledButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 16)),
                   onPressed: submit,
                   child: const Text('Register'),
                 ),
-                const SizedBox(height: 12),
-                Text(message, textAlign: TextAlign.center),
+                if (message.isNotEmpty) ...[
+                  const SizedBox(height: AppSpacing.sm),
+                  Text(
+                    message,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(color: AppColors.danger),
+                  ),
+                ],
               ],
             ),
           ),

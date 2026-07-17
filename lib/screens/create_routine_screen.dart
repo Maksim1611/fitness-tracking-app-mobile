@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 
 import '../services/api_client.dart';
+import '../theme/app_theme.dart';
+import '../utils/exercise_style.dart';
+import '../widgets/exercise_picker.dart';
+import '../widgets/icon_badge.dart';
 
 class SetEntry {
   final TextEditingController weightController = TextEditingController();
@@ -47,25 +51,12 @@ class _CreateRoutineScreenState extends State<CreateRoutineScreen> {
     }
   }
 
-  void openExercisePicker() {
-    showDialog(
-      context: context,
-      builder: (context) => SimpleDialog(
-        title: const Text('Pick an exercise'),
-        children: [
-          for (final exercise in availableExercises)
-            SimpleDialogOption(
-              onPressed: () {
-                setState(() {
-                  entries.add(ExerciseEntry(exercise));
-                });
-                Navigator.pop(context);
-              },
-              child: Text(exercise['name']),
-            ),
-        ],
-      ),
-    );
+  Future<void> openExercisePicker() async {
+    final picked = await showExercisePicker(context, availableExercises);
+    if (picked == null) return;
+    setState(() {
+      entries.add(ExerciseEntry(picked));
+    });
   }
 
   Future<void> submit() async {
@@ -118,26 +109,29 @@ class _CreateRoutineScreenState extends State<CreateRoutineScreen> {
     return Scaffold(
       appBar: AppBar(title: const Text('New routine')),
       body: ListView(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.fromLTRB(AppSpacing.md, AppSpacing.md, AppSpacing.md, 96),
         children: [
           TextField(
             controller: nameController,
-            decoration: const InputDecoration(
-              labelText: 'Routine name',
-              border: OutlineInputBorder(),
-            ),
+            decoration: const InputDecoration(labelText: 'Routine name'),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: AppSpacing.md),
           for (final entry in entries)
             Card(
-              margin: const EdgeInsets.only(bottom: 12),
+              margin: const EdgeInsets.only(bottom: AppSpacing.sm),
               child: Padding(
-                padding: const EdgeInsets.all(12),
+                padding: const EdgeInsets.all(AppSpacing.sm),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Row(
                       children: [
+                        IconBadge(
+                          icon: iconForExerciseType(entry.exercise['exerciseType']),
+                          color: colorForExerciseType(entry.exercise['exerciseType']),
+                          size: 36,
+                        ),
+                        const SizedBox(width: AppSpacing.sm),
                         Expanded(
                           child: Text(
                             entry.exercise['name'],
@@ -155,41 +149,44 @@ class _CreateRoutineScreenState extends State<CreateRoutineScreen> {
                       ],
                     ),
                     for (int s = 0; s < entry.sets.length; s++)
-                      Row(
-                        children: [
-                          SizedBox(width: 48, child: Text('Set ${s + 1}')),
-                          Expanded(
-                            child: TextField(
-                              controller: entry.sets[s].weightController,
-                              keyboardType: TextInputType.number,
-                              decoration: const InputDecoration(labelText: 'Weight (kg)'),
+                      Padding(
+                        padding: const EdgeInsets.only(top: AppSpacing.sm),
+                        child: Row(
+                          children: [
+                            SizedBox(width: 48, child: Text('Set ${s + 1}', style: TextStyle(color: AppColors.textSecondary))),
+                            Expanded(
+                              child: TextField(
+                                controller: entry.sets[s].weightController,
+                                keyboardType: TextInputType.number,
+                                decoration: const InputDecoration(labelText: 'Weight (kg)'),
+                              ),
                             ),
-                          ),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: TextField(
-                              controller: entry.sets[s].repsMinController,
-                              keyboardType: TextInputType.number,
-                              decoration: const InputDecoration(labelText: 'Min reps'),
+                            const SizedBox(width: AppSpacing.xs),
+                            Expanded(
+                              child: TextField(
+                                controller: entry.sets[s].repsMinController,
+                                keyboardType: TextInputType.number,
+                                decoration: const InputDecoration(labelText: 'Min reps'),
+                              ),
                             ),
-                          ),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: TextField(
-                              controller: entry.sets[s].repsMaxController,
-                              keyboardType: TextInputType.number,
-                              decoration: const InputDecoration(labelText: 'Max reps'),
+                            const SizedBox(width: AppSpacing.xs),
+                            Expanded(
+                              child: TextField(
+                                controller: entry.sets[s].repsMaxController,
+                                keyboardType: TextInputType.number,
+                                decoration: const InputDecoration(labelText: 'Max reps'),
+                              ),
                             ),
-                          ),
-                          IconButton(
-                            icon: const Icon(Icons.close, size: 18),
-                            onPressed: () {
-                              setState(() {
-                                entry.sets.removeAt(s);
-                              });
-                            },
-                          ),
-                        ],
+                            IconButton(
+                              icon: const Icon(Icons.close, size: 18),
+                              onPressed: () {
+                                setState(() {
+                                  entry.sets.removeAt(s);
+                                });
+                              },
+                            ),
+                          ],
+                        ),
                       ),
                     TextButton.icon(
                       onPressed: () {
@@ -209,14 +206,15 @@ class _CreateRoutineScreenState extends State<CreateRoutineScreen> {
             icon: const Icon(Icons.add),
             label: const Text('Add exercise'),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: AppSpacing.md),
           FilledButton(
-            style: FilledButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 16)),
             onPressed: submit,
             child: const Text('Create routine'),
           ),
-          const SizedBox(height: 8),
-          Text(message, textAlign: TextAlign.center),
+          if (message.isNotEmpty) ...[
+            const SizedBox(height: AppSpacing.sm),
+            Text(message, textAlign: TextAlign.center, style: const TextStyle(color: AppColors.danger)),
+          ],
         ],
       ),
     );
